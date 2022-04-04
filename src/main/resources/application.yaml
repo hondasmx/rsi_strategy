@@ -1,0 +1,8 @@
+app:
+  config:
+    token:
+    account:
+    number-of-lots: 1
+
+server:
+  port: 8081
