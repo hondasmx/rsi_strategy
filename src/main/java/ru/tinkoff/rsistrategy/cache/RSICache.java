@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.tinkoff.rsistrategy.model.CachedCandle;
+import ru.tinkoff.rsistrategy.model.RSIStrategyConfig;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -20,12 +21,9 @@ public class RSICache {
     @Getter
     private final Map<String, Map<Integer, BigDecimal>> cache = new HashMap<>();
 
-    public void calculateRSI(String figi, Map<String, TreeSet<CachedCandle>> candlesCache) {
-        calculateRSI(100, figi, candlesCache);
-        calculateRSI(500, figi, candlesCache);
-        calculateRSI(1000, figi, candlesCache);
-        calculateRSI(2000, figi, candlesCache);
-        calculateRSI(5000, figi, candlesCache);
+    public void calculateRSI(String figi, Map<String, TreeSet<CachedCandle>> candlesCache, RSIStrategyConfig config) {
+        var rsiPeriod = config.getRsiPeriod();
+        calculateRSI(rsiPeriod, figi, candlesCache);
     }
 
 
@@ -66,7 +64,7 @@ public class RSICache {
                 .subtract(
                         BigDecimal.valueOf(100).divide(BigDecimal.ONE.add(rs), RoundingMode.DOWN)
                 );
-        log.info("{}. {} candles RSI: {}", figi, limit, rsi);
+        log.info("figi: {}. {} candles RSI: {}", figi, limit, rsi);
 
         if (!this.cache.containsKey(figi)) {
             this.cache.put(figi, new HashMap<>());

@@ -3,6 +3,7 @@ package ru.tinkoff.rsistrategy.signal;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.tinkoff.rsistrategy.cache.InstrumentsCache;
 import ru.tinkoff.rsistrategy.cache.OrdersCache;
 import ru.tinkoff.rsistrategy.cache.RSICache;
 import ru.tinkoff.rsistrategy.model.CachedCandle;
@@ -23,13 +24,13 @@ public class RSISignalHandler {
     public void handle(CachedCandle candle, RSIStrategyConfig config) {
         var figi = config.getFigi();
         var closePrice = candle.getClosePrice();
+        var rsiPeriod = config.getRsiPeriod();
+        var rsi = rsiCache.getCache().get(figi).get(rsiPeriod);
 
-        var rsi = rsiCache.getCache().get(figi).get(100);
-
-        checkForOpenShort(rsi, figi, closePrice, config);
-        checkForOpenLong(rsi, figi, closePrice, config);
-        checkForCloseShort(figi, closePrice, config);
-        checkForCloseLong(figi, closePrice, config);
+//        checkForOpenShort(rsi, figi, closePrice, config);
+//        checkForOpenLong(rsi, figi, closePrice, config);
+//        checkForCloseShort(figi, closePrice, config);
+//        checkForCloseLong(figi, closePrice, config);
     }
 
     private void checkForOpenLong(BigDecimal rsi, String figi, BigDecimal closePrice, RSIStrategyConfig config) {
@@ -104,12 +105,9 @@ public class RSISignalHandler {
         String reason = null;
         if (shortOpen) {
             reason = "short opened";
-        }
-        else if (openPrice.multiply(takeProfit).compareTo(closePrice) >= 0) {
+        } else if (openPrice.multiply(takeProfit).compareTo(closePrice) >= 0) {
             reason = "take profit";
-        }
-
-        else if (openPrice.multiply(stopLoss).compareTo(closePrice) <= 0) {
+        } else if (openPrice.multiply(stopLoss).compareTo(closePrice) <= 0) {
             reason = "stop loss";
         }
 

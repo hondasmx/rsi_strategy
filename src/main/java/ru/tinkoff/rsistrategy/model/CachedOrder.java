@@ -8,7 +8,9 @@ import java.math.BigDecimal;
 @Data
 @Slf4j
 public class CachedOrder {
+
     private boolean shortOpen = false;
     private boolean longOpen = false;
+    //цена * лот
     private BigDecimal openPrice = BigDecimal.TEN;
 }

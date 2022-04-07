@@ -16,7 +16,10 @@ public class SdkService {
     private String token;
 
     public InvestApi getInvestApi() {
-
+        //todo
+        if (token == null || token.isBlank()){
+            throw new IllegalArgumentException("невалидный токен. Проверьте правильность токена в src/main/resources/application.yaml");
+        }
         if (investApi == null) {
             investApi = InvestApi.create(token);
         }

@@ -7,6 +7,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import ru.tinkoff.piapi.contract.v1.TradesStreamResponse;
 import ru.tinkoff.piapi.core.stream.StreamProcessor;
+import ru.tinkoff.rsistrategy.cache.TradesCache;
 import ru.tinkoff.rsistrategy.service.SdkService;
 
 import java.util.function.Consumer;
@@ -17,12 +18,14 @@ import java.util.function.Consumer;
 public class OrdersSubscriber {
 
     private final SdkService sdkService;
+    private final TradesCache tradesCache;
 
     @EventListener(ApplicationStartedEvent.class)
     public void subscribeTrades() {
         StreamProcessor<TradesStreamResponse> consumer = response -> {
             if (response.hasOrderTrades()) {
                 log.info("Новые данные по сделкам: {}", response);
+//                tradesCache.add(new TradesCache.Trade(response));
             }
         };
 

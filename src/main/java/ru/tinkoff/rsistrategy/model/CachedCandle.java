@@ -13,19 +13,21 @@ import java.math.BigDecimal;
 @EqualsAndHashCode(of = {"timestamp"})
 @Getter
 public class CachedCandle {
+
+    //цена * лот
     private final BigDecimal closePrice;
     private final Timestamp timestamp;
 
-    public CachedCandle(Quotation closePrice, Timestamp timestamp) {
-        this.closePrice = MapperUtils.quotationToBigDecimal(closePrice);
+    private CachedCandle(Quotation closePrice, Timestamp timestamp, BigDecimal lot) {
+        this.closePrice = MapperUtils.quotationToBigDecimal(closePrice).multiply(lot);
         this.timestamp = timestamp;
     }
 
-    public static CachedCandle ofHistoricCandle(HistoricCandle candle) {
-        return new CachedCandle(candle.getClose(), candle.getTime());
+    public static CachedCandle ofHistoricCandle(HistoricCandle candle, BigDecimal lot) {
+        return new CachedCandle(candle.getClose(), candle.getTime(), lot);
     }
 
-    public static CachedCandle ofStreamCandle(Candle candle) {
-        return new CachedCandle(candle.getClose(), candle.getTime());
+    public static CachedCandle ofStreamCandle(Candle candle, BigDecimal lot) {
+        return new CachedCandle(candle.getClose(), candle.getTime(), lot);
     }
 }

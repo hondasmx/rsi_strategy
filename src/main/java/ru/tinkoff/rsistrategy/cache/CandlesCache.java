@@ -15,6 +15,7 @@ import ru.tinkoff.rsistrategy.model.RSIStrategyConfig;
 import ru.tinkoff.rsistrategy.service.SdkService;
 import ru.tinkoff.rsistrategy.signal.RSISignalHandler;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
@@ -33,62 +34,78 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CandlesCache {
 
+    private final static int DAYS_CANDLES = 30;
     @Getter
     private final Map<String, TreeSet<CachedCandle>> cache = new HashMap<>();
-
     private final SdkService sdkService;
     private final RSISignalHandler signalHandler;
     private final RSICache rsiCacheService;
+    private final InstrumentsCache instrumentsCache;
 
-    private Set<CachedCandle> collectCandlesFor1Day(MarketDataService marketDataService, String figi, Instant endDate) {
+    private Set<CachedCandle> collectCandlesFor1Day(MarketDataService marketDataService, String figi, Instant endDate, BigDecimal lot) {
         var startDate = endDate.minus(1, ChronoUnit.DAYS);
         return marketDataService.getCandlesSync(figi, startDate, endDate, CandleInterval.CANDLE_INTERVAL_5_MIN)
                 .stream()
-                .map(CachedCandle::ofHistoricCandle)
+                .map(candle -> CachedCandle.ofHistoricCandle(candle, lot))
                 .collect(Collectors.toSet());
     }
 
 
-    public void initCache(RSIStrategyConfig config) {
-        var figi = config.getFigi();
-        var mdService = sdkService.getInvestApi().getMarketDataService();
-        var endDate = OffsetDateTime.now().toInstant();
-        log.info("init candles for figi " + figi);
-        log.info("end date for candles {}", OffsetDateTime.ofInstant(endDate, ZoneId.of("UTC")));
+    public void initCache(List<RSIStrategyConfig> configs) {
+        for (RSIStrategyConfig config : configs) {
+            var figi = config.getFigi();
+            var lot = instrumentsCache.getLot(figi);
+            if (cache.containsKey(figi)) {
+                return;
+            }
 
-        var candles = new TreeSet<CachedCandle>(Comparator.comparingLong(candle -> candle.getTimestamp().getSeconds()));
-        cache.put(figi, candles);
+            var mdService = sdkService.getInvestApi().getMarketDataService();
+            var endDate = OffsetDateTime.now().toInstant();
+            log.info("figi: {}. init candles", figi);
+            log.info("figi: {}. end date for candles {}", figi, OffsetDateTime.ofInstant(endDate, ZoneId.of("UTC")));
 
-        var candlesDays = config.getInitialCandlesSizeDays();
-        for (var i = 0; i < candlesDays; i++) {
-            var collectedCandles = collectCandlesFor1Day(mdService, figi, endDate);
-            candles.addAll(collectedCandles);
-            endDate = endDate.minus(1, ChronoUnit.DAYS);
+            var candles = new TreeSet<CachedCandle>(Comparator.comparingLong(candle -> candle.getTimestamp().getSeconds()));
+            cache.put(figi, candles);
+
+            for (var i = 0; i < DAYS_CANDLES; i++) {
+                var collectedCandles = collectCandlesFor1Day(mdService, figi, endDate, lot);
+                candles.addAll(collectedCandles);
+                endDate = endDate.minus(1, ChronoUnit.DAYS);
+            }
+            log.info("figi: {}. start date for candles {}", figi, OffsetDateTime.ofInstant(endDate, ZoneId.of("UTC")));
+            log.info("figi: {}. collected {} candles", figi, candles.size());
+            rsiCacheService.calculateRSI(figi, cache, config);
+            subscribeCandles(config);
         }
-        log.info("start date for candles {}", OffsetDateTime.ofInstant(endDate, ZoneId.of("UTC")));
-        log.info("collected {} candles", candles.size());
-        rsiCacheService.calculateRSI(figi, cache);
-        subscribeCandles(config);
     }
 
 
     private void subscribeCandles(RSIStrategyConfig config) {
         var figi = config.getFigi();
         var candles = cache.get(figi);
+        var lot = instrumentsCache.getLot(figi);
 
         Consumer<Throwable> onErrorCallback = error -> log.error(error.toString());
         StreamProcessor<MarketDataResponse> processor = response -> {
             if (response.hasCandle()) {
                 log.info("new candles data for figi " + figi);
 
-                var candle = CachedCandle.ofStreamCandle(response.getCandle());
+                var candle = CachedCandle.ofStreamCandle(response.getCandle(), lot);
                 candles.add(candle);
 
-                rsiCacheService.calculateRSI(figi, cache);
+                rsiCacheService.calculateRSI(figi, cache, config);
                 signalHandler.handle(candle, config);
             } else if (response.hasSubscribeCandlesResponse()) {
-                var successCount = response.getSubscribeCandlesResponse().getCandlesSubscriptionsList().stream().filter(el -> el.getSubscriptionStatus().equals(SubscriptionStatus.SUBSCRIPTION_STATUS_SUCCESS)).count();
-                var errorCount = response.getSubscribeTradesResponse().getTradeSubscriptionsList().stream().filter(el -> !el.getSubscriptionStatus().equals(SubscriptionStatus.SUBSCRIPTION_STATUS_SUCCESS)).count();
+                var successCount = response.getSubscribeCandlesResponse()
+                        .getCandlesSubscriptionsList()
+                        .stream()
+                        .filter(el -> el.getSubscriptionStatus().equals(SubscriptionStatus.SUBSCRIPTION_STATUS_SUCCESS))
+                        .count();
+                var errorCount = response.getSubscribeTradesResponse()
+                        .getTradeSubscriptionsList()
+                        .stream()
+                        .filter(el -> !el.getSubscriptionStatus().equals(SubscriptionStatus.SUBSCRIPTION_STATUS_SUCCESS))
+                        .count();
                 log.info("success candles subscriptions: {}", successCount);
                 log.info("error candles subscriptions: {}", errorCount);
             }
@@ -101,6 +118,6 @@ public class CandlesCache {
         if (stream == null) {
             stream = marketDataStreamService.newStream(streamName, processor, onErrorCallback);
         }
-        stream.subscribeCandles(List.of(figi), SubscriptionInterval.SUBSCRIPTION_INTERVAL_FIVE_MINUTES);
+        stream.subscribeCandles(List.of(figi), SubscriptionInterval.SUBSCRIPTION_INTERVAL_ONE_MINUTE);
     }
 }

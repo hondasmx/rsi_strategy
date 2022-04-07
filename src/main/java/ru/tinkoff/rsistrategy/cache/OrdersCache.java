@@ -16,16 +16,12 @@ public class OrdersCache {
 
     private final Map<String, CachedOrder> cache = new HashMap<>();
 
-    public void add(String figi, BigDecimal openPrice) {
-        var cachedOrder = new CachedOrder();
-        cachedOrder.setOpenPrice(openPrice);
-        cache.put(figi, cachedOrder);
-    }
-
+    //цена * лот
     public void setPrice(String figi, MoneyValue openPrice) {
         getCachedOrder(figi).setOpenPrice(MapperUtils.moneyValueToBigDecimal(openPrice));
     }
 
+    //цена * лот
     public BigDecimal getPrice(String figi) {
         return cache.get(figi).getOpenPrice();
     }
@@ -50,8 +46,8 @@ public class OrdersCache {
         var cachedOrder = cache.get(figi);
         if (cachedOrder == null) {
             cachedOrder = new CachedOrder();
+            cache.put(figi, cachedOrder);
         }
-        cache.put(figi, cachedOrder);
         return cachedOrder;
     }
 }

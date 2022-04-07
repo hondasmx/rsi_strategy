@@ -52,11 +52,11 @@ public class OrderService {
 
     private MoneyValue sellMarket(String figi) {
         var orderId = UUID.randomUUID().toString();
-        return sdkService.getInvestApi().getOrdersService().postOrderSync(figi, numberOfLots, Quotation.getDefaultInstance(), OrderDirection.ORDER_DIRECTION_SELL, accountId, OrderType.ORDER_TYPE_MARKET, orderId).getExecutedOrderPrice();
+        return sdkService.getInvestApi().getOrdersService().postOrderSync(figi, numberOfLots, Quotation.getDefaultInstance(), OrderDirection.ORDER_DIRECTION_SELL, accountId, OrderType.ORDER_TYPE_MARKET, orderId).getTotalOrderAmount();
     }
 
     private MoneyValue buyMarket(String figi) {
         var orderId = UUID.randomUUID().toString();
-        return sdkService.getInvestApi().getOrdersService().postOrderSync(figi, numberOfLots, Quotation.getDefaultInstance(), OrderDirection.ORDER_DIRECTION_BUY, accountId, OrderType.ORDER_TYPE_MARKET, orderId).getExecutedOrderPrice();
+        return sdkService.getInvestApi().getOrdersService().postOrderSync(figi, numberOfLots, Quotation.getDefaultInstance(), OrderDirection.ORDER_DIRECTION_BUY, accountId, OrderType.ORDER_TYPE_MARKET, orderId).getTotalOrderAmount();
     }
 }

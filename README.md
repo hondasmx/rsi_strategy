@@ -31,16 +31,16 @@ RSI (relative strength index) - индекс относительной силы
 ```json 
 {
 "figi": "BBG004730ZJ9",
-"initialCandlesSizeDays": 100,
 "upperRsiThreshold": 70,
 "lowerRsiThreshold": 30,
 "takeProfit": 0.15,
-"stopLoss": 0.05
+"stopLoss": 0.05,
+"rsiPeriod": 14
 }
 ```
 - Figi. Идентификатор инструмента
-- initialCandlesSizeDays. Количество дней, за которые будут запрошены свечи
-- upperRsiThreshold. Верхнее значение RSI, после которого будет дан сигнал на покупку в short
-- lowerRsiThreshold. Нижнее значение RSI, после которого будет дан сигнал на покупку в long
-- takeProfit. Значение для take profit
-- stopLoss. Значение для stop loss
+- upperRsiThreshold. Не обязательный параметр. Значение по-умолчанию 70. Верхнее значение RSI, после которого будет дан сигнал на покупку в short
+- lowerRsiThreshold. Не обязательный параметр. Значение по-умолчанию 30. Нижнее значение RSI, после которого будет дан сигнал на покупку в long
+- takeProfit. Не обязательный параметр. Значение по-умолчанию 0.15 (15%). Значение для take profit 
+- stopLoss. Не обязательный параметр. Значение по-умолчанию 0.05 (5%). Значение для stop loss
+- rsiPeriod. Не обязательный параметр. Значение по-умолчанию 14. Количество последних свечей, по которым будет рассчитан RSI. 
