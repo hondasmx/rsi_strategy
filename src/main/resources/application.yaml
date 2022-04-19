@@ -1,7 +1,7 @@
 app:
   config:
-    token: t.m1cjaUO-4owZHxezRQONWbPz39NH-QKyjr4G8GrFvxZDBJKa8KxJwr2decgxqBwp0JymvYCojXhtNFN-PoBkOg
-    account: 2072628585
+    token:
+    sandbox-account:
     number-of-lots: 1
 
 server:

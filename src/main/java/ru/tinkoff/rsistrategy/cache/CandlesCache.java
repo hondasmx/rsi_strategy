@@ -88,7 +88,7 @@ public class CandlesCache {
         Consumer<Throwable> onErrorCallback = error -> log.error(error.toString());
         StreamProcessor<MarketDataResponse> processor = response -> {
             if (response.hasCandle()) {
-                log.info("new candles data for figi " + figi);
+                log.info("new candles data for figi " + response.getCandle().getFigi());
 
                 var candle = CachedCandle.ofStreamCandle(response.getCandle(), lot);
                 candles.add(candle);

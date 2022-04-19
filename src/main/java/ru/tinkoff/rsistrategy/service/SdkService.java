@@ -11,12 +11,12 @@ import ru.tinkoff.piapi.core.InvestApi;
 @RequiredArgsConstructor
 public class SdkService {
     private InvestApi investApi;
+    private InvestApi sandboxApi;
 
     @Value("${app.config.token}")
     private String token;
 
     public InvestApi getInvestApi() {
-        //todo
         if (token == null || token.isBlank()){
             throw new IllegalArgumentException("невалидный токен. Проверьте правильность токена в src/main/resources/application.yaml");
         }
@@ -24,5 +24,15 @@ public class SdkService {
             investApi = InvestApi.create(token);
         }
         return investApi;
+    }
+
+    public InvestApi getSandboxApi() {
+        if (token == null || token.isBlank()){
+            throw new IllegalArgumentException("невалидный токен. Проверьте правильность токена в src/main/resources/application.yaml");
+        }
+        if (sandboxApi == null) {
+            sandboxApi = InvestApi.createSandbox(token);
+        }
+        return sandboxApi;
     }
 }
