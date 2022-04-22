@@ -35,17 +35,6 @@ public class ApplicationController {
         return sandboxAccountService.totalAmountOfFunds();
     }
 
-    @PostMapping("/test/rsi")
-    public List<RSIStrategyConfig> startTest(@RequestBody List<RSIStrategyConfig> configs) {
-        simulator.simulate(configs);
-        return configs;
-    }
-
-    @GetMapping("/test/portfolio")
-    public BigDecimal getPortfolioTest() {
-        return sandboxAccountService.totalAmountOfFunds();
-    }
-
     @GetMapping("/rsi/trades")
     public List<TradesCache.Trade> getTrades() {
         return tradesCache.getCache();
