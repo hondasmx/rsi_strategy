@@ -24,16 +24,15 @@ public class SandboxAccountService {
     public String getAccountId() {
         if (!StringUtils.hasLength(accountId)) {
             log.info("no sandbox account was set. creating a new one");
-            var sandboxService = sdkService.getSandboxApi().getSandboxService();
+            var sandboxService = sdkService.getInvestApi().getSandboxService();
             accountId = sandboxService.openAccountSync();
-            addFunds(sandboxService);
             log.info("new sandbox account: {}", accountId);
         }
         return accountId;
     }
 
     public PortfolioResponse getPortfolio() {
-        return sdkService.getSandboxApi().getSandboxService().getPortfolioSync(getAccountId());
+        return sdkService.getInvestApi().getSandboxService().getPortfolioSync(getAccountId());
     }
 
     public BigDecimal totalAmountOfFunds() {
@@ -49,9 +48,11 @@ public class SandboxAccountService {
     }
 
     private void addFunds(SandboxService sandboxService) {
-        var amount = 100000;
+        var amount = 1000000;
         var accountId = getAccountId();
         log.info("add funds for sandbox account: {}. amount: {}", accountId, amount);
         sandboxService.payIn(accountId, MoneyValue.newBuilder().setCurrency("rub").setUnits(amount).build());
+        sandboxService.payIn(accountId, MoneyValue.newBuilder().setCurrency("usd").setUnits(amount).build());
+        log.info("added funds for sandbox account: {}. amount: {}", accountId, amount);
     }
 }

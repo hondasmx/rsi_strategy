@@ -5,13 +5,14 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Data
 @Slf4j
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class RSIStrategyConfig {
 
-    private String figi;
+    private List<String> figi;
     private BigDecimal upperRsiThreshold = BigDecimal.valueOf(70);
     private BigDecimal lowerRsiThreshold = BigDecimal.valueOf(30);
     private BigDecimal takeProfit = BigDecimal.valueOf(0.15);

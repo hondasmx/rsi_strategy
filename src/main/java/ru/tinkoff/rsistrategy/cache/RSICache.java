@@ -47,6 +47,8 @@ public class RSICache {
             var candleClosePrice = dataset.get(i).getClosePrice();
             var prevCandleClosePrice = dataset.get(i - 1).getClosePrice();
             var change = candleClosePrice.subtract(prevCandleClosePrice);
+            if (candleClosePrice.equals(prevCandleClosePrice)) continue;
+
             if (change.compareTo(BigDecimal.ZERO) >= 0) {
                 totalGain = totalGain.add(change);
                 gainAmount++;
@@ -55,21 +57,27 @@ public class RSICache {
                 lossAmount++;
             }
         }
+        if (gainAmount == 0) gainAmount = 1;
+        if (lossAmount == 0) lossAmount = 1;
 
         var avgGain = totalGain.divide(BigDecimal.valueOf(gainAmount), RoundingMode.DOWN);
+        if (avgGain.equals(BigDecimal.ZERO)) avgGain = BigDecimal.ONE;
+
         var avgLoss = totalLoss.divide(BigDecimal.valueOf(lossAmount), RoundingMode.DOWN);
+        if (avgLoss.equals(BigDecimal.ZERO)) avgLoss = BigDecimal.ONE;
+
         var rs = avgGain.divide(avgLoss, RoundingMode.DOWN).abs();
         //100 - 100 / (1 + rs);
         var rsi = BigDecimal.valueOf(100)
                 .subtract(
                         BigDecimal.valueOf(100).divide(BigDecimal.ONE.add(rs), RoundingMode.DOWN)
                 );
-        log.info("figi: {}. {} candles RSI: {}", figi, limit, rsi);
+//        log.info("figi: {}. {} candles RSI: {}", figi, limit, rsi);
 
-        if (!this.cache.containsKey(figi)) {
-            this.cache.put(figi, new HashMap<>());
+        if (!cache.containsKey(figi)) {
+            cache.put(figi, new HashMap<>());
         }
-        var rsiValue = this.cache.get(figi);
+        var rsiValue = cache.get(figi);
         rsiValue.put(limit, rsi);
     }
 }

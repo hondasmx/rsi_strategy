@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import ru.tinkoff.rsistrategy.cache.CandlesCache;
 import ru.tinkoff.rsistrategy.cache.TradesCache;
+import ru.tinkoff.rsistrategy.simulator.StrategySimulator;
 import ru.tinkoff.rsistrategy.model.RSIStrategyConfig;
 import ru.tinkoff.rsistrategy.service.SandboxAccountService;
 
@@ -21,6 +22,8 @@ public class ApplicationController {
     private final TradesCache tradesCache;
     private final SandboxAccountService sandboxAccountService;
 
+    private final StrategySimulator simulator;
+
     @PostMapping("/rsi")
     public List<RSIStrategyConfig> start(@RequestBody List<RSIStrategyConfig> configs) {
         candlesCache.initCache(configs);
@@ -28,7 +31,18 @@ public class ApplicationController {
     }
 
     @GetMapping("/portfolio")
-    public BigDecimal getAllRsi() {
+    public BigDecimal getPortfolio() {
+        return sandboxAccountService.totalAmountOfFunds();
+    }
+
+    @PostMapping("/test/rsi")
+    public List<RSIStrategyConfig> startTest(@RequestBody List<RSIStrategyConfig> configs) {
+        simulator.simulate(configs);
+        return configs;
+    }
+
+    @GetMapping("/test/portfolio")
+    public BigDecimal getPortfolioTest() {
         return sandboxAccountService.totalAmountOfFunds();
     }
 
