@@ -24,20 +24,19 @@ RSI (relative strength index) - индекс относительной силы
 
 ## Запуск и конфигурация
 После запуска приложения будут доступны 2 эндпоинта
-- GET http://localhost:8081/rsi - получение актуальных подписок
 - POST http://localhost:8081/rsi - добавление в пул подписок. Пример конфига см ниже
 - GET http://localhost:8081/portfolio - общая стоимость портфеля
 
 ## Пример конфига
 ```json 
-{
+[{
 "figi": "BBG004730ZJ9",
 "upperRsiThreshold": 70,
 "lowerRsiThreshold": 30,
 "takeProfit": 0.15,
 "stopLoss": 0.05,
 "rsiPeriod": 14
-}
+}]
 ```
 - Figi. Идентификатор инструмента
 - upperRsiThreshold. Не обязательный параметр. Значение по-умолчанию 70. Верхнее значение RSI, после которого будет дан сигнал на покупку в short

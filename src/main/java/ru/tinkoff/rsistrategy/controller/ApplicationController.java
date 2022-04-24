@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import ru.tinkoff.rsistrategy.cache.CandlesCache;
-import ru.tinkoff.rsistrategy.cache.TradesCache;
 import ru.tinkoff.rsistrategy.model.RSIStrategyConfig;
 import ru.tinkoff.rsistrategy.service.SandboxAccountService;
 
@@ -18,7 +17,6 @@ import java.util.List;
 public class ApplicationController {
 
     private final CandlesCache candlesCache;
-    private final TradesCache tradesCache;
     private final SandboxAccountService sandboxAccountService;
 
 
@@ -33,8 +31,4 @@ public class ApplicationController {
         return sandboxAccountService.totalAmountOfFunds();
     }
 
-    @GetMapping("/rsi/trades")
-    public List<TradesCache.Trade> getTrades() {
-        return tradesCache.getCache();
-    }
 }
